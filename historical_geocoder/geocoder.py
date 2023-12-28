@@ -13,7 +13,7 @@ class Geocoder:
         self.projection_crs = projection_crs
         self.geographic_crs = geographic_crs
         self.address_separator = address_separator
-        self.data = pd.DataFrame(addresses, columns=["Address"])
+        self.data = pd.DataFrame([str(i) for i in addresses], columns=["Address"])
         self.data["Original Address"] = self.data["Address"]
 
         self.split_address()

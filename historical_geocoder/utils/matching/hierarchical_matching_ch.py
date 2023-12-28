@@ -88,9 +88,18 @@ def address_structuralize_row(match_results, county_table):
 
         row = county_table.query(query).iloc[0]
 
-        province = row['PROV_CH'] if 'PROV_CH' in row else "NA"
-        city = row['CITY_CH'] if 'CITY_CH' in row else "NA"
-        county = row['COUNTY_CH'] if 'COUNTY_CH' in row else "NA"
+        if num == 2:
+            province = row['PROV_CH']
+            city = "NA"
+            county = "NA"
+        elif num == 4:
+            province = row['PROV_CH']
+            city = row['CITY_CH']
+            county = "NA"
+        elif num == 6:
+            province = row['PROV_CH']
+            city = row['CITY_CH']
+            county = row['COUNTY_CH']
 
         provinces.append(province)
         cities.append(city)

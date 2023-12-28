@@ -17,7 +17,7 @@ def centroid(polygon):
 def representative_point(polygon):
     return polygon.representative_point()
 
-# intersection使用的都是centroid算法，不是representative_point算法
+# When the point_type is intersection, the "centroid" algorithm is used, not the "representative_point" algorithm
 def intersection(polygon_series):
     centroids = []
     for polygon in polygon_series:
@@ -26,7 +26,7 @@ def intersection(polygon_series):
         new_line = LineString(centroids)
         return new_line.centroid
     if len(polygon_series) > 2:
-        # 如果使用三个点构建一个多边形，需要复制第一个点作为第四个点，以形成一个闭合的多边形
+        # If use three points to construct a polygon, need to copy the first point as the fourth point to form a closed polygon
         centroids.append(centroids[0])
         new_polygon = Polygon(centroids).convex_hull
         return new_polygon.centroid
@@ -100,6 +100,7 @@ def horizontal_and_vertical_segment(polygon):
     return northeast_part, northwest_part, southeast_part, southwest_part
 
 def with_direction(polygon, direction):
+    point = None
     if direction == "南":
         _, south_part = horizontal_segment(polygon)
         point = south_part.representative_point()
@@ -124,6 +125,10 @@ def with_direction(polygon, direction):
     if direction == "西北":
         _, northwest_part, _, _ = horizontal_and_vertical_segment(polygon)
         point = northwest_part.representative_point()
+    if point is None:
+        point = polygon.representative_point()
+        print("Warning: 1 entry cannot find point with direction, use representative point without direction instead")
+    
     return point
 
 
