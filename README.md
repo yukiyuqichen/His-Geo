@@ -8,7 +8,7 @@
     <img src="https://colab.research.google.com/assets/colab-badge.svg" /></a>
 </p>
 
-A library to extract historical toponyms and locations from texts, geocode the locations, and visualize the results.
+A library to extract historical toponyms and locations from texts, geocode the locations, and visualize the results on maps.
 
 ## Install ##
 
