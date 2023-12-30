@@ -1,6 +1,6 @@
 import json
 from retrying import retry
-from utils.extraction.chatgpt_extractor import extract_data as chatgpt_extract_data
+from .utils.extraction.chatgpt_extractor import extract_data as chatgpt_extract_data
 
 
 def print_retry_details(exception):

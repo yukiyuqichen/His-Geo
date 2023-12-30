@@ -3,10 +3,8 @@ import geopandas as gpd
 from shapely.geometry import LineString, LinearRing, Point, Polygon
 
 
-df_gcs = gpd.read_file("./data/2020China.geojson")
-
-def get_polygon(projection_crs, code):
-    df_pcs = df_gcs.to_crs(projection_crs)
+def get_polygon(projection_crs, code, gdf_database):
+    df_pcs = gdf_database.to_crs(projection_crs)
     polygon_series = df_pcs.loc[df_pcs["CODE"] == code, "geometry"]
     polygon = polygon_series.iat[0]
     return polygon
@@ -132,26 +130,26 @@ def with_direction(polygon, direction):
     return point
 
 
-def calculate_point(projection_crs, codes, point_type, direction):
+def calculate_point(projection_crs, codes, point_type, direction, gdf_database):
     if point_type == "centroid":
-        polygon = get_polygon(projection_crs, codes[0])
+        polygon = get_polygon(projection_crs, codes[0], gdf_database)
         point = centroid(polygon)
     if point_type == "representative_point":
-        polygon = get_polygon(projection_crs, codes[0])
+        polygon = get_polygon(projection_crs, codes[0], gdf_database)
         point = representative_point(polygon)
     if point_type == "with_direction":
-        polygon = get_polygon(projection_crs, codes[0])
+        polygon = get_polygon(projection_crs, codes[0], gdf_database)
         point = with_direction(polygon, direction)
     if point_type == "intersection":
         polygon_series = gpd.GeoSeries()
         for code in codes:
-            polygon = get_polygon(projection_crs, code)
+            polygon = get_polygon(projection_crs, code, gdf_database)
             polygon_series = pd.concat([polygon_series, gpd.GeoSeries([polygon])])
         point = intersection(polygon_series)
     return point
 
 
-def get_point_from_address_row(row, projection_crs):
+def get_point_from_address_row(row, projection_crs, gdf_database):
     codes = [list(i.values())[0] for i in row["Match Result"]]
     direction = row["Direction"]
     if len(row["Match Error"]) < 1:
@@ -161,12 +159,12 @@ def get_point_from_address_row(row, projection_crs):
             point_type = "with_direction"
         else:
             point_type = "representative_point"
-        point = calculate_point(projection_crs, codes, point_type, direction)
+        point = calculate_point(projection_crs, codes, point_type, direction, gdf_database)
         return point
 
     return None
     
 
-def get_point_from_address(data, projection_crs):
-    data["geometry"] = data.apply(lambda x: get_point_from_address_row(x, projection_crs), axis=1)
+def get_point_from_address(data, projection_crs, gdf_database):
+    data["geometry"] = data.apply(lambda x: get_point_from_address_row(x, projection_crs, gdf_database), axis=1)
     return data

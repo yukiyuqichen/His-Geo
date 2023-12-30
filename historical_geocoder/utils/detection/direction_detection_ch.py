@@ -2,19 +2,7 @@ import pandas as pd
 import json
 
 
-with open("./data/direction.json", "r", encoding="utf-8-sig") as f:
-    direction_dictionary = json.load(f)
-
-directions = direction_dictionary["ch"]["directions"]
-direction_postfixes = direction_dictionary["ch"]["postfixes"]
-
-direction_with_postfixes = directions.copy()
-for direction in directions:
-    for direction_postfix in direction_postfixes:
-        direction_with_postfixes.append(direction + direction_postfix)
-
-
-def detect_direction_row(row):
+def detect_direction_row(row, direction_with_postfixes, direction_postfixes):
     multiple_addresses = row
     # Only deal with single address
     if len(multiple_addresses) == 1:
@@ -27,6 +15,6 @@ def detect_direction_row(row):
     return row, None
     
 
-def detect_direction(data):
-    data["Address"], data["Direction"] = zip(*data["Address"].apply(lambda x: detect_direction_row(x)))
+def detect_direction(data, direction_with_postfixes, direction_postfixes):
+    data["Address"], data["Direction"] = zip(*data["Address"].apply(lambda x: detect_direction_row(x, direction_with_postfixes, direction_postfixes)))
     return data

@@ -1,9 +1,12 @@
+import os
 import pandas as pd
 import geopandas as gpd
-import normalizer
-import matcher
-import detector
-import calculator
+from keplergl import KeplerGl
+import json
+from . import normalizer
+from .import matcher
+from .import detector
+from .import calculator
 
 
 class Geocoder:
@@ -38,13 +41,23 @@ class Geocoder:
         self.data = matcher.match_address(self.data, self.lang)
 
     def detect_direction(self):
-        self.data = detector.detect_direction(self.data)
+        self.data = detector.detect_direction(self.data, self.lang)
 
     def calculate_point(self):
-        self.data = calculator.calculate_point(self.data, self.projection_crs, self.geographic_crs)
+        self.data = calculator.calculate_point(self.data, self.projection_crs, self.geographic_crs, self.lang)
         
         self.data["Address"] = self.data["Original Address"]
         try:
             self.data.drop(columns=["Original Address"], inplace=True)
         except:
             pass
+    
+    def visualize(self, crs=""):
+        self.data = gpd.GeoDataFrame(self.data, geometry="geometry")
+        self.data.crs = self.geographic_crs
+        if crs != "":
+            self.data = self.data.to_crs(crs)
+        map = KeplerGl(height=500)
+        map.add_data(data=self.data.dropna(subset=["geometry"]))
+
+        return map

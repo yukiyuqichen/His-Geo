@@ -1,20 +1,26 @@
 import pandas as pd
 import re
+import os
 
+current_script_path = os.path.abspath(__file__)
+parent_directory = os.path.dirname(os.path.dirname(os.path.dirname(current_script_path)))
+minority_file_path = os.path.join(parent_directory, 'data', 'minority_list.txt')
 
 postfix_list = ["特别行政区", "辖区", "地区", "自治区", "自治县", "自治州", "省", "市", "区", "县", "盟", "委员会"]
 
 minority_list = []
-with open("./data/minority_list.txt", "r", encoding="utf-8-sig") as f:
+with open(minority_file_path, "r", encoding="utf-8-sig") as f:
     for line in f.readlines():
         minority_list.append(line.strip())
 
 minority_postfix_list = []
+
 for minority in minority_list:
     if len(minority) > 2:
         minority_postfix_list.append(minority.replace("族", "") + "自治州")
         minority_postfix_list.append(minority.replace("族", "") + "自治区")
         minority_postfix_list.append(minority.replace("族", "") + "自治县")
+
 
 def normalize_address(str, structure_sign):
     if "自治" in str:
