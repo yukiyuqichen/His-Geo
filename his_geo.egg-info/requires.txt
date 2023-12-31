@@ -1,6 +1,0 @@
-geopandas
-geopy
-shapely
-openai
-keplergl
-setuptools

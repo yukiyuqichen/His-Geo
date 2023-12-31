@@ -1,7 +1,0 @@
-Metadata-Version: 2.1
-Name: his-geo
-Version: 0.1.0
-Summary: A library to extract historical toponyms from texts, geocode and visualize the results.
-Author: Yuqi Chen
-Author-email: cyq0722@pku.edu.cn
-License-File: LICENSE
