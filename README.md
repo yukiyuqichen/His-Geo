@@ -1,26 +1,26 @@
-# Historical-Geocoder:  Geocoding the past world
+# His-Geo:  Geocoding the past world
 <p align="center">
 <a href="https://pypi.org/project/historical_geocoder">
-    <img src="https://img.shields.io/pypi/v/historical_geocoder.svg" /></a>
+    <img src="https://img.shields.io/pypi/v/his_geo.svg" /></a>
 <a href="http://www.apache.org/licenses/">
     <img src="https://img.shields.io/badge/License-Apache--2.0-green.svg" /></a>
 <a href="https://colab.research.google.com/github/yukiyuqichen/Historical-Geocoder/blob/main/test.ipynb">
     <img src="https://colab.research.google.com/assets/colab-badge.svg" /></a>
 </p>
 
-A library to extract historical toponyms and locations from texts, geocode the locations, and visualize the results on maps.
+A library to extract historical toponyms from texts, geocode and visualize the results on maps.
 
 ## Install ##
 
 ```python
-pip install historical_geocoder --upgrade
+pip install his_geo --upgrade
 ```
 
 ## Import
 
 ```
-from historical_geocoder import extractor
-from historical_geocoder import geocoder
+from his_geo import extractor
+from his_geo import geocoder
 ```
 
 ## Usage ##

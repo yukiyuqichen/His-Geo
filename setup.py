@@ -2,10 +2,10 @@ from setuptools import setup
 from setuptools import find_packages
 
 
-VERSION = '0.1.11'
+VERSION = '0.1.0'
 
 setup(
-    name='historical_geocoder',  # package name
+    name='his_geo',  # package name
     version=VERSION,  # package version
     author='Yuqi Chen',
     author_email='cyq0722@pku.edu.cn',
@@ -18,9 +18,9 @@ setup(
         'setuptools',
     ],
     package_data={
-        'historical_geocoder': ['*.py', 'data/*']
+        'his_geo': ['*.py', 'data/*']
     },
-    description='A library to extract historical toponyms and locations from texts, geocode the locations, and visualize the results.',
+    description='A library to extract historical toponyms from texts, geocode and visualize the results.',
     packages=find_packages(),
     zip_safe=False,
 )
