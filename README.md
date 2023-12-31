@@ -1,10 +1,10 @@
 # His-Geo:  Geocoding the past world
 <p align="center">
-<a href="https://pypi.org/project/historical_geocoder">
+<a href="https://pypi.org/project/his_geo">
     <img src="https://img.shields.io/pypi/v/his_geo.svg" /></a>
 <a href="http://www.apache.org/licenses/">
-    <img src="https://img.shields.io/badge/License-Apache--2.0-green.svg" /></a>
-<a href="https://colab.research.google.com/github/yukiyuqichen/Historical-Geocoder/blob/main/test.ipynb">
+    <img src="https://img.shields.io/badge/License-MIT-green" /></a>
+<a href="https://colab.research.google.com/github/yukiyuqichen/His-Geo/blob/main/test.ipynb">
     <img src="https://colab.research.google.com/assets/colab-badge.svg" /></a>
 </p>
 
