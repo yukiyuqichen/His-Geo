@@ -25,7 +25,7 @@ from his_geo import geocoder
 
 ## Usage ##
 
-### 1. Extractor: Extract toponyms and locations from historical texts
+### 1. Extractor: Extract toponyms and addresses from historical texts
 
 #### 1.1 Set a prompt
 
