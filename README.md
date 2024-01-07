@@ -152,3 +152,8 @@ his_geocoder.data.to_csv("The file path", encoding='utf-8-sig')
 
 ![](https://github.com/yukiyuqichen/Historical-Geocoder/blob/main/figures/workflow.png)
 
+## Calculation
+
+![](https://github.com/yukiyuqichen/His-Geo/blob/main/figures/calculation_from_polygon.png)
+
+![](https://github.com/yukiyuqichen/His-Geo/blob/main/figures/calculation_from_point.png)
