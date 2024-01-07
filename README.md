@@ -152,8 +152,16 @@ his_geocoder.data.to_csv("The file path", encoding='utf-8-sig')
 
 ![](https://github.com/yukiyuqichen/Historical-Geocoder/blob/main/figures/workflow.png)
 
-## Calculation
+### Extraction
+
+![](https://github.com/yukiyuqichen/His-Geo/blob/main/figures/extraction.png)
+
+### Calculation
 
 ![](https://github.com/yukiyuqichen/His-Geo/blob/main/figures/calculation_from_polygon.png)
 
 ![](https://github.com/yukiyuqichen/His-Geo/blob/main/figures/calculation_from_point.png)
+
+## Case Study: Counties in the Spring and Autumn and Warring States periods (770 – 221 B.C.E.)
+
+![](https://github.com/yukiyuqichen/His-Geo/blob/main/figures/maps.png)
