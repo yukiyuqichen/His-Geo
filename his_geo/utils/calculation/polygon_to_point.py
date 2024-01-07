@@ -191,5 +191,5 @@ def get_point_from_address_row(row, geographic_crs, gdf_database):
 
 def get_point_from_address(data, geographic_crs, gdf_database):
     # data["geometry"] = data.apply(lambda x: get_point_from_address_row(x, geographic_crs, gdf_database), axis=1)
-    data["geometry"], data["Max Distance"] = zip(*data.apply(lambda x: get_point_from_address_row(x, geographic_crs, gdf_database), axis=1))
+    data["geometry"], data["Maximum Error Distance"] = zip(*data.apply(lambda x: get_point_from_address_row(x, geographic_crs, gdf_database), axis=1))
     return data
