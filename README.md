@@ -152,11 +152,11 @@ his_geocoder.data.to_csv("The file path", encoding='utf-8-sig')
 
 ![](https://github.com/yukiyuqichen/Historical-Geocoder/blob/main/figures/workflow.png)
 
-### Extraction
+### Toponym and Location Extraction
 
 ![](https://github.com/yukiyuqichen/His-Geo/blob/main/figures/extraction.png)
 
-### Calculation
+### Coordinate Calculation
 
 ![](https://github.com/yukiyuqichen/His-Geo/blob/main/figures/calculation_from_polygon.png)
 
