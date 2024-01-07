@@ -44,7 +44,7 @@ class Geocoder:
         self.data = detector.detect_direction(self.data, self.lang)
 
     def calculate_point(self):
-        self.data = calculator.calculate_point(self.data, self.projection_crs, self.geographic_crs, self.lang)
+        self.data = calculator.calculate_point(self.data, self.geographic_crs, self.lang)
         
         self.data["Address"] = self.data["Original Address"]
         try:

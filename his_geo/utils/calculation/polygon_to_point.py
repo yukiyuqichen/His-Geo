@@ -1,10 +1,12 @@
 import pandas as pd
 import geopandas as gpd
-from shapely.geometry import LineString, LinearRing, Point, Polygon
+from shapely.geometry import LineString, LinearRing, Point, Polygon, MultiPolygon
+from geopy.distance import geodesic
+import numpy as np
 
 
-def get_polygon(projection_crs, code, gdf_database):
-    df_pcs = gdf_database.to_crs(projection_crs)
+def get_polygon(geographic_crs, code, gdf_database):
+    df_pcs = gdf_database.to_crs(geographic_crs)
     polygon_series = df_pcs.loc[df_pcs["CODE"] == code, "geometry"]
     polygon = polygon_series.iat[0]
     return polygon
@@ -129,27 +131,49 @@ def with_direction(polygon, direction):
     
     return point
 
+def calculate_max_distance_in_polygon(polygon):
+    max_distance = 0
 
-def calculate_point(projection_crs, codes, point_type, direction, gdf_database):
+    if isinstance(polygon, Polygon):
+        polygons = [polygon]
+    elif isinstance(polygon, MultiPolygon):
+        polygons = [p for p in polygon.geoms]
+
+    for poly in polygons:
+        points = np.array(poly.exterior.coords)
+        points = points[:, [1, 0]]  # Swap coordinates for geodesic calculations
+        for i, point1 in enumerate(points):
+            for point2 in points[i+1:]:
+                distance = geodesic(point1, point2).kilometers
+                max_distance = max(max_distance, distance)
+
+    return max_distance
+
+def calculate_point(geographic_crs, codes, point_type, direction, gdf_database):
     if point_type == "centroid":
-        polygon = get_polygon(projection_crs, codes[0], gdf_database)
+        polygon = get_polygon(geographic_crs, codes[0], gdf_database)
         point = centroid(polygon)
+        max_distance = calculate_max_distance_in_polygon(polygon)
     if point_type == "representative_point":
-        polygon = get_polygon(projection_crs, codes[0], gdf_database)
+        polygon = get_polygon(geographic_crs, codes[0], gdf_database)
         point = representative_point(polygon)
+        max_distance = calculate_max_distance_in_polygon(polygon)
     if point_type == "with_direction":
-        polygon = get_polygon(projection_crs, codes[0], gdf_database)
+        polygon = get_polygon(geographic_crs, codes[0], gdf_database)
         point = with_direction(polygon, direction)
+        max_distance = calculate_max_distance_in_polygon(polygon)
     if point_type == "intersection":
         polygon_series = gpd.GeoSeries()
         for code in codes:
-            polygon = get_polygon(projection_crs, code, gdf_database)
+            polygon = get_polygon(geographic_crs, code, gdf_database)
             polygon_series = pd.concat([polygon_series, gpd.GeoSeries([polygon])])
         point = intersection(polygon_series)
-    return point
+        combined_polygon = polygon_series.unary_union
+        max_distance = calculate_max_distance_in_polygon(combined_polygon)
+    return point, max_distance
 
 
-def get_point_from_address_row(row, projection_crs, gdf_database):
+def get_point_from_address_row(row, geographic_crs, gdf_database):
     codes = [list(i.values())[0] for i in row["Match Result"]]
     direction = row["Direction"]
     if len(row["Match Error"]) < 1:
@@ -159,12 +183,13 @@ def get_point_from_address_row(row, projection_crs, gdf_database):
             point_type = "with_direction"
         else:
             point_type = "representative_point"
-        point = calculate_point(projection_crs, codes, point_type, direction, gdf_database)
-        return point
+        point, max_distance = calculate_point(geographic_crs, codes, point_type, direction, gdf_database)
+        return point, max_distance
 
-    return None
+    return None, None
     
 
-def get_point_from_address(data, projection_crs, gdf_database):
-    data["geometry"] = data.apply(lambda x: get_point_from_address_row(x, projection_crs, gdf_database), axis=1)
+def get_point_from_address(data, geographic_crs, gdf_database):
+    # data["geometry"] = data.apply(lambda x: get_point_from_address_row(x, geographic_crs, gdf_database), axis=1)
+    data["geometry"], data["Max Distance"] = zip(*data.apply(lambda x: get_point_from_address_row(x, geographic_crs, gdf_database), axis=1))
     return data

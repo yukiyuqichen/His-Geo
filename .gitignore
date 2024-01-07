@@ -1,2 +1,4 @@
-*.svg.drawio
+*.drawio
 *.pypirc
+visualize.ipynb
+calculate.ipynb
