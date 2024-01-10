@@ -42,9 +42,8 @@ Keep the following in mind:
    "Toponym 1", "Location 1"
    "Toponym 2", "Location 2"
    Please do not include any explanation, verb or extraneous information.
-The text is as follows:
 
-
+The text is as follows:
          """
 ```
 
