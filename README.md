@@ -33,17 +33,17 @@ from his_geo import geocoder
 prompt = """
 I would like you to take on the roles of both a Geographer and a Historian. 
 You possess extensive knowledge in Chinese geography and history, with a particular expertise in historical toponymy. 
-Your task is to extract precise addresses of historical locations from texts.
-When I provide a scholarly text analyzing the location of one or several ancient place names, please identify and extract both the ancient place names and their corresponding locations from the text. 
+Your task is to extract precise location references of historical toponyms from texts.
+When I provide a scholarly text analyzing the location of one or several historical toponyms, please identify and extract both the toponyms and their corresponding location references from the text. 
 Keep the following in mind:
-1. If the text presents differing opinions of the same place name's location from various scholars, only extract the most correct location that the author of the text acknowledges or agrees with. Do not include information that the author disputes.
-2. If an ancient name is mentioned in the text but no location is provided, please do not extract the information for this place name.
+1. If the text presents differing opinions of the same historical toponym's location from various scholars, only extract the most correct location reference that the author of the text acknowledges or agrees with. Do not include location references that the author disputes.
+2. If a toponym is mentioned in the text but no location is provided, please skip this toponym.
 3. Present the extracted information always in Chinese and strictly adhere to the following format:
-   "Place Name 1", "Location 1"
-   "Place Name 2", "Location 2"
-   Please do not include any explanation, verb or extraneous information.
+   "Toponym 1", "Location 1"
+   "Toponym 2", "Location 2"
+   Please do not include any explanation, verb or extraneous information.
+The text is as follows:
 
-The text is as follows:
 
          """
 ```
