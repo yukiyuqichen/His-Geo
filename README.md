@@ -161,6 +161,9 @@ his_geocoder.data.to_csv("The file path", encoding='utf-8-sig')
 
 ![](https://github.com/yukiyuqichen/His-Geo/blob/main/figures/calculation_from_point.png)
 
+![](https://github.com/yukiyuqichen/His-Geo/blob/main/figures/closeness.png)
+
+
 ## Case Study: Counties in the Spring and Autumn and Warring States periods (770 – 221 B.C.E.)
 
 ![](https://github.com/yukiyuqichen/His-Geo/blob/main/figures/maps.png)
