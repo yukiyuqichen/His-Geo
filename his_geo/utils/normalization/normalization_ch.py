@@ -42,16 +42,22 @@ def normalize_address(str, structure_sign):
     if str == "市辖区":
         str == "市辖区"
     else:
-        temp_signs = {"河南县":"[temp1]", "河北区":"[temp2]", "津市市":"[temp3]"}
+        temp_signs = {"河南县":"[temp1]", "河北区":"[temp2]", "津市市":"[temp3]", 
+                      "西市区":"[temp4]", "北市区":"[temp5]", "南市区":"[temp6]",
+                      "新市区":"[temp7]", "东区":"[temp8]", "西区":"[temp9]"}
         for temp in temp_signs.keys():
             if temp in str: 
                 str = str.replace(temp, temp_signs[temp])
         for postfix in postfix_list:
-            if postfix in str and len(str) > 2:
-                str = str.replace(postfix, structure_sign)
+            # if postfix in str and len(str) <= 2:
+            #     str = str.replace(postfix, postfix + structure_sign)
+            # else:
+            #     str = str.replace(postfix, structure_sign)
+            str = str.replace(postfix, structure_sign)
         for temp in temp_signs.keys():
             if temp_signs[temp] in str:
                 str = str.replace(temp_signs[temp], temp)
+
                 
     str = re.sub("（.*）", "", str)
     return str

@@ -11,11 +11,14 @@ def get_polygon(geographic_crs, code, gdf_database):
     polygon = polygon_series.iat[0]
     return polygon
 
+
 def centroid(polygon):
     return polygon.centroid
 
+
 def representative_point(polygon):
     return polygon.representative_point()
+
 
 # When the point_type is intersection, the "centroid" algorithm is used, not the "representative_point" algorithm
 def intersection(polygon_series):
@@ -31,12 +34,14 @@ def intersection(polygon_series):
         new_polygon = Polygon(centroids).convex_hull
         return new_polygon.centroid
 
+
 def get_x_max(geometry):
     if geometry.geom_type == 'Polygon':
         return max([coord[0] for coord in list(geometry.exterior.coords)])
     elif geometry.geom_type == 'MultiPolygon':
         # Handle MultiPolygon by iterating over each Polygon
         return max(coord[0] for polygon in geometry.geoms for coord in list(polygon.exterior.coords))
+
 
 def get_x_min(geometry):
     if geometry.geom_type == 'Polygon':
@@ -45,12 +50,14 @@ def get_x_min(geometry):
         # Handle MultiPolygon by iterating over each Polygon
         return min(coord[0] for polygon in geometry.geoms for coord in list(polygon.exterior.coords))
 
+
 def get_y_max(geometry):
     if geometry.geom_type == 'Polygon':
         return max([coord[1] for coord in list(geometry.exterior.coords)])
     elif geometry.geom_type == 'MultiPolygon':
         # Handle MultiPolygon by iterating over each Polygon
         return max(coord[1] for polygon in geometry.geoms for coord in list(polygon.exterior.coords))
+
 
 def get_y_min(geometry):
     if geometry.geom_type == 'Polygon':
@@ -75,6 +82,7 @@ def horizontal_segment(polygon):
     south_part = polygon.intersection(south_buffer)
     return north_part, south_part
 
+
 def vertical_segment(polygon):
     x =  polygon.centroid.x
     x_max = get_x_max(polygon)
@@ -90,6 +98,7 @@ def vertical_segment(polygon):
     west_part = polygon.intersection(west_buffer)
     return east_part, west_part
 
+
 def horizontal_and_vertical_segment(polygon):
     north_part, south_part = horizontal_segment(polygon)
     east_part, west_part = vertical_segment(polygon)
@@ -98,6 +107,7 @@ def horizontal_and_vertical_segment(polygon):
     southeast_part = south_part.intersection(east_part)
     southwest_part = south_part.intersection(west_part)
     return northeast_part, northwest_part, southeast_part, southwest_part
+
 
 def with_direction(polygon, direction):
     point = None
@@ -131,6 +141,7 @@ def with_direction(polygon, direction):
     
     return point
 
+
 def calculate_max_distance_in_polygon(polygon):
     max_distance = 0
 
@@ -149,19 +160,23 @@ def calculate_max_distance_in_polygon(polygon):
 
     return max_distance
 
-def calculate_point(geographic_crs, codes, point_type, direction, gdf_database):
+
+def calculate_point(geographic_crs, codes, point_type, direction, gdf_database, if_certainty):
     if point_type == "centroid":
         polygon = get_polygon(geographic_crs, codes[0], gdf_database)
         point = centroid(polygon)
-        max_distance = calculate_max_distance_in_polygon(polygon)
+        if if_certainty:
+            max_distance = calculate_max_distance_in_polygon(polygon)
     if point_type == "representative_point":
         polygon = get_polygon(geographic_crs, codes[0], gdf_database)
         point = representative_point(polygon)
-        max_distance = calculate_max_distance_in_polygon(polygon)
+        if if_certainty:
+            max_distance = calculate_max_distance_in_polygon(polygon)
     if point_type == "with_direction":
         polygon = get_polygon(geographic_crs, codes[0], gdf_database)
         point = with_direction(polygon, direction)
-        max_distance = calculate_max_distance_in_polygon(polygon)
+        if if_certainty:
+            max_distance = calculate_max_distance_in_polygon(polygon)
     if point_type == "intersection":
         polygon_series = gpd.GeoSeries()
         for code in codes:
@@ -169,27 +184,40 @@ def calculate_point(geographic_crs, codes, point_type, direction, gdf_database):
             polygon_series = pd.concat([polygon_series, gpd.GeoSeries([polygon])])
         point = intersection(polygon_series)
         combined_polygon = polygon_series.unary_union
-        max_distance = calculate_max_distance_in_polygon(combined_polygon)
-    return point, max_distance
+        if if_certainty:
+            max_distance = calculate_max_distance_in_polygon(combined_polygon)
+    if if_certainty:
+        return point, max_distance
+    else:
+        return point, None
 
 
-def get_point_from_address_row(row, geographic_crs, gdf_database):
+def get_point_from_address_row(row, geographic_crs, gdf_database, if_certainty):
     codes = [list(i.values())[0] for i in row["Match Result"]]
     direction = row["Direction"]
-    if len(row["Match Error"]) < 1:
-        if row["Match Type"] == "Multiple":
+    if "No Match" not in row["Match Error"]:
+        if "Multiple Matches" in row["Match Error"]:
             point_type = "intersection"
         elif row["Direction"] is not None:
             point_type = "with_direction"
         else:
             point_type = "representative_point"
-        point, max_distance = calculate_point(geographic_crs, codes, point_type, direction, gdf_database)
+        point, max_distance = calculate_point(geographic_crs, codes, point_type, direction, gdf_database, if_certainty)
         return point, max_distance
 
     return None, None
     
 
-def get_point_from_address(data, geographic_crs, gdf_database):
-    # data["geometry"] = data.apply(lambda x: get_point_from_address_row(x, geographic_crs, gdf_database), axis=1)
-    data["geometry"], data["Maximum Error Distance"] = zip(*data.apply(lambda x: get_point_from_address_row(x, geographic_crs, gdf_database), axis=1))
+def get_point_from_address(data, geographic_crs, gdf_database, lang, if_certainty):
+    data["id"] = data.index
+    data_filtered = data[data["Match Period"] == "modern"].copy()
+    data_remaining = data[data["Match Period"] != "modern"].copy()
+    data_filtered["geometry"], data_filtered["Maximum Error Distance"] = zip(*data_filtered.apply(lambda x: get_point_from_address_row(x, geographic_crs, gdf_database, if_certainty), axis=1))
+    if lang == "ch":
+        max_distance = 5046.768
+    if if_certainty:
+        data_filtered["Certainty"] = data_filtered["Maximum Error Distance"].apply(lambda x: 1 - x / max_distance)
+    else:
+        data_filtered.drop(columns=["Maximum Error Distance"], inplace=True)
+    data = pd.concat([data_remaining, data_filtered]).set_index("id").sort_index()
     return data
