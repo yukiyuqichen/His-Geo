@@ -4,7 +4,7 @@
     <img src="https://img.shields.io/pypi/v/his_geo.svg" /></a>
 <a href="http://www.apache.org/licenses/">
     <img src="https://img.shields.io/badge/License-MIT-green" /></a>
-<a href="https://colab.research.google.com/github/yukiyuqichen/His-Geo/blob/main/test.ipynb">
+<a href="https://colab.research.google.com/github/yukiyuqichen/His-Geo/blob/main/evaluate.ipynb">
     <img src="https://colab.research.google.com/assets/colab-badge.svg" /></a>
 </p>
 
