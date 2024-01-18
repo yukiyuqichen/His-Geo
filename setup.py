@@ -2,7 +2,7 @@ from setuptools import setup
 from setuptools import find_packages
 
 
-VERSION = '0.1.2'
+VERSION = '0.1.3'
 
 setup(
     name='his_geo',  # package name
@@ -18,7 +18,7 @@ setup(
         'setuptools',
     ],
     package_data={
-        'his_geo': ['*.py', 'data/*']
+        'his_geo': ['*.py', 'data/*', 'data/Historic/*', 'data/Modern/*']
     },
     description='A library to extract historical toponyms from texts, geocode and visualize the results.',
     packages=find_packages(),
