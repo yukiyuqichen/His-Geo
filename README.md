@@ -113,8 +113,9 @@ addresses = data["The Address Column"].tolist()
 
 ```python
 geocoder_test = geocoder.Geocoder(addresses, 
-                                  lang="ch",  
-                                  projection_crs="EPSG CODE")
+                                  lang="ch",
+                                  preferences=["modern", "historic"],
+                                  if_certainty=True)
 ```
 
 Only 'ch' (Chinese) can be used in lang for now.
@@ -123,19 +124,19 @@ Only 'ch' (Chinese) can be used in lang for now.
 
 ```python
 # Addresses will be matched with locations in existing database after a process of toponym normalization
-his_geocoder.match_address()
+geocoder_test.match_address()
 
 # Detect if there is any information about specific direction, to make the calculation more accurate
-his_geocoder.detect_direction()
+geocoder_test.detect_direction()
 
 # Calculate a coordinate for each address
-his_geocoder.calculate_point()
+geocoder_test.calculate_point()
 ```
 
 #### 2.4 Visualize the result on a map
 
 ```python
-map = his_geocoder.visualize()
+map = geocoder_test.visualize()
 map
 ```
 
@@ -144,7 +145,7 @@ map
 #### 2.5 Save the result
 
 ```python
-his_geocoder.data.to_csv("The file path", encoding='utf-8-sig')
+geocoder_test.data.to_csv("The file path", encoding='utf-8-sig')
 ```
 
 ## Pipeline ##
