@@ -1,10 +1,6 @@
 import pandas as pd
-import requests
 import itertools
-import time
-import re
-from retrying import retry
-from shapely.geometry import Point
+from pandarallel import pandarallel
 
 
 def generate_n_grams_chinese(text):
@@ -18,26 +14,16 @@ def generate_n_grams_chinese(text):
     
     return n_grams
 
-def print_retry_details(exception):
-    print(f"Error happened: {exception}")
-    print("Retrying...")
+def check_elements_in_string(elements, string):
+    temp_string = string
+    for element in elements:
+        if element in temp_string:
+            temp_string = temp_string.replace(element, '', 1)
+        else:
+            return False
     return True
 
-
-@retry(retry_on_exception=print_retry_details)
-def invoke_api(toponym):
-    # wait for some time to avoid exceeding the limit of the API
-    time.sleep(3)
-    url = f"https://maps.cga.harvard.edu/tgaz/placename?fmt=json&n={toponym}"
-    response = requests.get(url)
-    if response.status_code == 200:
-        return response.json()["placenames"]
-        
-    else:
-        return None
-
-
-def match_address_row(row, county_table, level_dict):
+def match_address_row(row, gazetteer_filtered, level_dict, year_range):
     """
     Input: 
            row is a row of the dataframe
@@ -49,61 +35,40 @@ def match_address_row(row, county_table, level_dict):
             match_type is a str ("Single Location Reference", "Multiple Location References")
     """
     addresses = row["Address"]
-    match_dataframe = pd.DataFrame(columns=["id", "element", "match_num"])
+    match_dataframe = pd.DataFrame(columns=["id", "element", "match_num", "match_level"])
     match_elements = []
     match_final = []
     match_errors = []
+    match_levels = []
     match_period = None
-    geometry = None
 
-    counties_set = set(county_table["NAME_CH"].tolist())
 
+
+    print(addresses)
+    
     for address in addresses:
-        for county_name in counties_set:
+        for i in range(len(gazetteer_filtered)):
             match_results_id = {}
             match_results_element = []
             address_temp = address
-            if county_name in address_temp:
-                match_results_element.append(county_name)
-                address_temp = address_temp.replace(county_name, "")
+            match_level = None
 
-                prefectures = invoke_api(county_name)
-                if len(prefectures) > 0:
-                    match_period = "historic"
-                    for j in range(len(prefectures)):
-                        match_results_id["county"] = prefectures[j]["sys_id"]
-                        new_row = {"id": match_results_id,
-                                   "element": match_results_element,
-                                   "match_num": len(match_results_id)}
-                        match_dataframe.loc[len(match_dataframe)] = new_row
+            for j in range(1, len(level_dict)):
+                lev_name = gazetteer_filtered.loc[i, f"LEV{j}_NAME"]
+                if pd.notnull(lev_name):
+                    if lev_name in address_temp:
+                        if match_level is None:
+                            match_level = gazetteer_filtered.loc[i, f"LEV{j}_TYPE"]
+                        match_results_element.append(lev_name)
+                        match_results_id[f"LEV{j}"] = gazetteer_filtered.loc[i, f"LEV{j}_ID"]
+                        address_temp = address_temp.replace(lev_name, "")
 
-                        prefecture = prefectures[j]["parent name"].split(" ")[0]
-                        if prefecture != "" and prefecture in address_temp:
-                            match_results_element_pref = match_results_element.copy()
-                            match_results_id_pref = match_results_id.copy()
-                            match_results_element_pref.append(prefecture)
-                            match_results_id_pref["prefecture"] = prefectures[j]["parent sys_id"]
-
-                            new_row = {"id": match_results_id_pref,
-                                    "element": match_results_element_pref,
-                                    "match_num": len(match_results_id_pref)}
-                            match_dataframe.loc[len(match_dataframe)] = new_row
-
-                            address_temp = address_temp.replace(prefecture, "")
-                            # In early periods, there are often no provinces but dynasties in this field
-                            provinces = invoke_api(prefecture)
-                            for k in range(len(provinces)):
-                                province = provinces[k]["parent name"].split(" ")[0]
-                                if province != "" and province in address_temp:
-                                    match_results_element_prov = match_results_element_pref.copy()
-                                    match_results_id_prov = match_results_id_pref.copy()
-                                    match_results_element_prov.append(province)
-                                    match_results_id_prov["province"] = provinces[k]["parent sys_id"]
-
-                                    new_row = {"id": match_results_id_prov,
-                                               "element": match_results_element_prov,
-                                               "match_num": len(match_results_id_prov)}
-                                    match_dataframe.loc[len(match_dataframe)] = new_row
+            if len(match_results_id) > 0:
+                new_row = {"id": match_results_id,
+                           "element": match_results_element,
+                           "match_num": len(match_results_id),
+                           "match_level": match_level}
+                match_dataframe.loc[len(match_dataframe)] = new_row
 
         match_dataframe = match_dataframe.drop_duplicates(subset=["element"]).reset_index(drop=True)
 
@@ -114,26 +79,18 @@ def match_address_row(row, county_table, level_dict):
         elif len(match_dataframe) == 1:
             match = match_dataframe.iloc[0]
             match_elements.append(match["element"])
-            if "county" in match["id"].keys():
-                match_final.append({"county": match["id"]["county"]})
-                match_level = 3
-                for result in prefectures:
-                    if result["sys_id"] == match["id"]["county"]:
-                        geometry = result["xy coordinates"].split(", ")
-                        break
-                if geometry != None:
-                    geometry = (float(geometry[0]), float(geometry[1]))
-                    geometry = Point(geometry)
-            elif "prefecture" in match["id"].keys():
-                match_final.append({"prefecture": match["id"]["prefecture"]})
-                match_level = 2
-            elif "province" in match["id"].keys():
-                match_final.append({"province": match["id"]["province"]})
-                match_level = 1
+            match_levels.append(match["match_level"])
+            
+            for i in range(1, len(level_dict)):
+                if f"LEV{i}" in match["id"].keys():
+                    match_final.append({f"LEV{i}": match["id"][f"LEV{i}"]})
+                    break
+
+            match_period = "historic"
 
         else:
             match_num_max = match_dataframe["match_num"].max()
-            match_max = match_dataframe[match_dataframe["match_num"] == match_num_max].reset_index(drop=True).copy()
+            match_max = match_dataframe[match_dataframe["match_num"] == match_num_max]
             if len(match_max) > 1:
                 match_max["element_length"] = match_max["element"].apply(lambda x: len("".join(list(itertools.chain(*x)))))
                 match_max = match_max[match_max["element_length"] == match_max["element_length"].max()]
@@ -142,78 +99,71 @@ def match_address_row(row, county_table, level_dict):
 
             for id, match in match_max.iterrows():
                 match_elements.append(match["element"])    
-                if "county" in match["id"].keys():
-                    match_final.append({"county": match["id"]["county"]})
-                    match_level = 3
-                    for result in prefectures:
-                        if result["sys_id"] == match["id"]["county"]:
-                            geometry = result["xy coordinates"].split(", ")
-                            break
-                    if geometry != None:
-                        geometry = (float(geometry[0]), float(geometry[1]))
-                        geometry = Point(geometry)
-                elif "prefecture" in match["id"].keys():
-                    match_final.append({"prefecture": match["id"]["prefecture"]})
-                    match_level = 2
-                elif "province" in match["id"].keys():
-                    match_final.append({"province": match["id"]["province"]})
-                    match_level = 1
-                
-    match_level = level_dict[match_level]
+                match_levels.append(match["match_level"])
+                for i in range(1, len(level_dict)):
+                    if f"LEV{i}" in match["id"].keys():
+                        match_final.append({f"LEV{i}": match["id"][f"LEV{i}"]})
+                        break
 
-    print(match_elements, match_final, match_level, match_errors, match_period, geometry)
+            match_period = "historic"
 
-    if row["Match Result"] is not None:
-        match_elements_previous, match_final_previous, match_level_previous, match_errors_previous, match_period_previous, geometry_previous = row["Match Elements"], row["Match Result"], row["Match Level"], row["Match Error"], row["Match Period"], row["geometry"]
+    print(match_elements, match_final, match_levels, match_errors, match_period)
+
+    # if row["Match Result"] is not None:
+    if len(row["Match Result"]) > 0:
+        match_elements_previous, match_final_previous, match_levels_previous, match_errors_previous, match_period_previous = row["Match Elements"], row["Match Result"], row["Match Level"], row["Match Error"], row["Match Period"]
         if len(match_elements) == 0:
-            return match_elements_previous, match_final_previous, match_level_previous, match_errors_previous, match_period_previous, geometry_previous
+            return match_elements_previous, match_final_previous, match_levels_previous, match_errors_previous, match_period_previous
         else:
             elements_length_previous = len("".join(match_elements_previous[0]))
             elements_length_current = len("".join(match_elements[0]))
             if elements_length_current > elements_length_previous:
-                return match_elements, match_final, match_level, match_errors, match_period, geometry
+                return match_elements, match_final, match_levels, match_errors, match_period
             else:
-                return match_elements_previous, match_final_previous, match_level_previous, match_errors_previous, match_period_previous, geometry_previous
+                return match_elements_previous, match_final_previous, match_levels_previous, match_errors_previous, match_period_previous
+    else:
+        return match_elements, match_final, match_levels, match_errors, match_period
 
 
-def address_structuralize_row(match_elements, county_table):
 
-    provinces = []
-    prefectures = []
-    counties = []
+def address_structuralize_row(match_results, gazetteer_unnormalized, level_dict):
 
-    for element in match_elements:
-        try:
-            counties.append(element[0])
-        except:
-            pass
-        try:
-            prefectures.append(element[1])
-        except:
-            pass
-        try:
-            provinces.append(element[2])
-        except:
-            pass
+    codes = [list(i.values())[0] for i in match_results]
 
-    return list(set(provinces)), list(set(prefectures)), list(set(counties))
+    result_dict = {}
+    for i in range(1, len(level_dict)):
+        result_dict[f"LEV{i}"] = []
+    
+    begins = []
+    ends = []
 
+    for code in codes:
+    
+        for i in range(1, len(level_dict)):
+            query = f"LEV{i}_ID == '{code}'"
+            query_result = gazetteer_unnormalized.query(query)
+            if len(query_result) > 0:
+                row = gazetteer_unnormalized.query(query).iloc[0]
+                begins.append(row[f"LEV{i}_BEG"])
+                ends.append(row[f"LEV{i}_END"])
+                for j in range(i, len(level_dict)):
+                    if pd.notnull(row[f"LEV{j}_NAME"]):
+                        result_dict[f"LEV{j}"].append(row[f"LEV{j}_NAME"])
+                break
 
-def filter_his_address(row):
-    pattern = "道|府|郡"
-    addresses = row["Address"]
-    for address in addresses:
-        if re.search(pattern, address):
-            return True
-    return False
+    return result_dict["LEV1"], result_dict["LEV2"], result_dict["LEV3"], result_dict["LEV4"], result_dict["LEV5"], begins, ends
 
 
-def match_address(data, county_table, level_dict):
-    data["id"] = data.index
-    data_remaining = data[data.apply(lambda x: not filter_his_address(x), axis=1)].copy()
-    data_filtered = data[data.apply(lambda x: filter_his_address(x), axis=1)].copy()
-    data_filtered["Match Elements"], data_filtered["Match Result"], data_filtered["Match Level"], data_filtered["Match Error"], data_filtered["Match Period"], data_filtered["geometry"] = zip(*data_filtered.apply(lambda x: match_address_row(x, county_table, level_dict), axis=1))
-    data_filtered["Province"], data_filtered["Prefecture"], data_filtered["County"] = zip(*data_filtered.apply(lambda x: address_structuralize_row(x["Match Elements"], county_table), axis=1))
-    data = pd.concat([data_remaining, data_filtered]).set_index("id").sort_index()
+def match_address(data, gazetteer, gazetteer_unnormalized, level_dict, year_range):
+    if year_range != ():
+        gazetteer_filtered = gazetteer[(gazetteer["BEG"] <= year_range[1]) & (gazetteer["END"] >= year_range[0])].reset_index(drop=True)
+        gazetteer_unnormalized_filtered = gazetteer_unnormalized[(gazetteer_unnormalized["BEG"] <= year_range[1]) & (gazetteer_unnormalized["END"] >= year_range[0])].reset_index(drop=True)
+    else:
+        gazetteer_filtered = gazetteer
+        gazetteer_unnormalized_filtered = gazetteer_unnormalized
+
+    pandarallel.initialize(progress_bar=True)
+    data["Match Elements"], data["Match Result"], data["Match Level"], data["Match Error"], data["Match Period"] = zip(*data.parallel_apply(lambda x: match_address_row(x, gazetteer_filtered, level_dict, year_range), axis=1))
+    data["LEV1"], data["LEV2"], data["LEV3"], data["LEV4"], data["LEV5"], data['BEG'], data['END'] = zip(*data.parallel_apply(lambda x: address_structuralize_row(x["Match Result"], gazetteer_unnormalized_filtered, level_dict), axis=1))
     return data
 

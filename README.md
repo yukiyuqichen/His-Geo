@@ -1,10 +1,10 @@
 # His-Geo:  Geocoding the past world
 <p align="center">
-<a href="https://pypi.org/project/his_geo">
-    <img src="https://img.shields.io/pypi/v/his_geo.svg" /></a>
+<!-- <a href="https://pypi.org/project/his_geo">
+    <img src="https://img.shields.io/pypi/v/his_geo.svg" /></a> -->
 <a href="http://www.apache.org/licenses/">
     <img src="https://img.shields.io/badge/License-MIT-green" /></a>
-<a href="https://colab.research.google.com/github/yukiyuqichen/His-Geo/blob/main/evaluate.ipynb">
+<a href="https://colab.research.google.com/github/yukiyuqichen/His-Geo/blob/main/test.ipynb">
     <img src="https://colab.research.google.com/assets/colab-badge.svg" /></a>
 </p>
 
@@ -51,7 +51,7 @@ The text is as follows:
 
 ```python
 model = "chatgpt"
-model_version = "gpt-3.5-turbo-1106"	# "gpt-4-1106-preview"
+model_version = "gpt-4o-2024-08-06"	# "gpt-4-turbo-2024-04-09"
 api_key = "Your API key"
 ```
 
@@ -77,15 +77,15 @@ Run the extractor:
 
 ```python
 results = llm_extractor.extract_texts(texts)
-# Extracting text 0 to ./evaluation/extracted_results_chatgpt_gpt-4-1106-preview.json
-# Extracting text 1 to ./evaluation/extracted_results_chatgpt_gpt-4-1106-preview.json
-# Extracting text 2 to ./evaluation/extracted_results_chatgpt_gpt-4-1106-preview.json
-# Extracting text 3 to ./evaluation/extracted_results_chatgpt_gpt-4-1106-preview.json
-# Extracting text 4 to ./evaluation/extracted_results_chatgpt_gpt-4-1106-preview.json
+# Extracting text 0 to ./extracted_results_chatgpt_gpt-4o-2024-08-06.json
+# Extracting text 1 to ./extracted_results_chatgpt_gpt-4o-2024-08-06.json
+# Extracting text 2 to ./extracted_results_chatgpt_gpt-4o-2024-08-06.json
+# Extracting text 3 to ./extracted_results_chatgpt_gpt-4o-2024-08-06.json
+# Extracting text 4 to ./extracted_results_chatgpt_gpt-4o-2024-08-06.json
 # ......
 ```
 
-The result will be automatically saved to the output_dir you set
+The result will be automatically saved to the output_dir you set.
 
 #### 1.5 Check the result
 
@@ -161,6 +161,8 @@ geocoder_test.data.to_csv("The file path", encoding='utf-8-sig')
 ![](https://github.com/yukiyuqichen/His-Geo/blob/main/figures/calculation_from_polygon.png)
 
 ![](https://github.com/yukiyuqichen/His-Geo/blob/main/figures/calculation_from_point.png)
+
+### Evaluation
 
 ![](https://github.com/yukiyuqichen/His-Geo/blob/main/figures/closeness.png)
 

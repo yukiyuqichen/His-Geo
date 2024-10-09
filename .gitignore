@@ -2,3 +2,4 @@
 *.pypirc
 visualize.ipynb
 calculate.ipynb
+setup.py

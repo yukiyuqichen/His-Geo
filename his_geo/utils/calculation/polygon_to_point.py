@@ -3,7 +3,7 @@ import geopandas as gpd
 from shapely.geometry import LineString, LinearRing, Point, Polygon, MultiPolygon
 from geopy.distance import geodesic
 import numpy as np
-
+from pandarallel import pandarallel
 
 def get_polygon(geographic_crs, code, gdf_database):
     df_pcs = gdf_database.to_crs(geographic_crs)
@@ -212,7 +212,18 @@ def get_point_from_address(data, geographic_crs, gdf_database, lang, if_certaint
     data["id"] = data.index
     data_filtered = data[data["Match Period"] == "modern"].copy()
     data_remaining = data[data["Match Period"] != "modern"].copy()
-    data_filtered["geometry"], data_filtered["Maximum Error Distance"] = zip(*data_filtered.apply(lambda x: get_point_from_address_row(x, geographic_crs, gdf_database, if_certainty), axis=1))
+
+    # With no parellel
+    # data_filtered["geometry"], data_filtered["Maximum Error Distance"] = zip(*data_filtered.progress_apply(lambda x: get_point_from_address_row(x, geographic_crs, gdf_database, if_certainty), axis=1))
+
+    # With parellel
+    pandarallel.initialize(progress_bar=True)
+    data_filtered["geometry"], data_filtered["Maximum Error Distance"] = zip(
+        *data_filtered.parallel_apply(
+            lambda x: get_point_from_address_row(x, geographic_crs, gdf_database, if_certainty), axis=1
+        )
+    )
+
     if lang == "ch":
         max_distance = 5046.768
     if if_certainty:

@@ -1,4 +1,4 @@
-from .utils.normalization import normalization_ch as normalizer_ch
+from .utils.normalization import normalization_ch_modern as normalizer_ch
 
 
 def normalize_address(address, structure_sign="", lang="ch"):

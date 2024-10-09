@@ -1,5 +1,6 @@
 import pandas as pd
 import itertools
+from pandarallel import pandarallel
 
 
 def generate_n_grams_chinese(text):
@@ -52,7 +53,7 @@ def match_address_row(row, county_table, level_dict):
                 match_results_element.append(province_name)
                 match_results_id["province"] = county_table.loc[i, "PCODE"]
                 address_temp = address_temp.replace(province_name, "")
-
+            
             city_name = county_table.loc[i, "CITY_CH"]
             if city_name in address_temp:
                 match_results_element.append(city_name)
@@ -60,10 +61,12 @@ def match_address_row(row, county_table, level_dict):
                 address_temp = address_temp.replace(city_name, "")
 
             county_name = county_table.loc[i, "COUNTY_CH"]
-            if county_name in address_temp:
-                match_results_element.append(county_name)
-                match_results_id["county"] = county_table.loc[i, "CODE2020"]
-                address_temp = address_temp.replace(county_name, "")
+            if not pd.isnull(county_name):
+                if county_name != '':
+                    if county_name in address_temp:
+                        match_results_element.append(county_name)
+                        match_results_id["county"] = county_table.loc[i, "CODE2020"]
+                        address_temp = address_temp.replace(county_name, "")
 
             if len(match_results_id) > 0:
                 new_row = {"id": match_results_id,
@@ -94,11 +97,26 @@ def match_address_row(row, county_table, level_dict):
         else:
             match_num_max = match_dataframe["match_num"].max()
             match_max = match_dataframe[match_dataframe["match_num"] == match_num_max].reset_index(drop=True).copy()
+            
+            # Compare the length of matched elements
             if len(match_max) > 1:
                 match_max["element_length"] = match_max["element"].apply(lambda x: len("".join(list(itertools.chain(*x)))))
+                match_others = match_max[match_max["element_length"] != match_max["element_length"].max()]
                 match_max = match_max[match_max["element_length"] == match_max["element_length"].max()]
+                
+                if len(match_max) == 1:
+                    address_temp = address
+                    address_elements = match_max["element"].iloc[0]
+                    for element in address_elements:
+                        address_temp = address_temp.replace(element, "")
+                    for id, match in match_others.iterrows():
+                        elements = match["element"]
+                        if check_elements_in_string(elements, address_temp) == True:
+                            match_max.loc[len(match_max)] = match
+                        
                 if len(match_max) > 1:
                     match_errors.append("Multiple Matches")
+                
 
             for id, match in match_max.iterrows():
                 match_elements.append(match["element"])    
@@ -162,7 +180,8 @@ def address_structuralize_row(match_results, county_table_unnormalized):
 
 
 def match_address(data, county_table, county_table_unnormalized, level_dict):
-    data["Match Elements"], data["Match Result"], data["Match Level"], data["Match Error"], data["Match Period"] = zip(*data.apply(lambda x: match_address_row(x, county_table, level_dict), axis=1))
-    data["Province"], data["Prefecture"], data["County"] = zip(*data.apply(lambda x: address_structuralize_row(x["Match Result"], county_table_unnormalized), axis=1))
+    pandarallel.initialize(progress_bar=True)
+    data["Match Elements"], data["Match Result"], data["Match Level"], data["Match Error"], data["Match Period"] = zip(*data.parallel_apply(lambda x: match_address_row(x, county_table, level_dict), axis=1))
+    data["Province"], data["Prefecture"], data["County"] = zip(*data.parallel_apply(lambda x: address_structuralize_row(x["Match Result"], county_table_unnormalized), axis=1))
     return data
 
