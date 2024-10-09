@@ -166,6 +166,7 @@ geocoder_test.data.to_csv("The file path", encoding='utf-8-sig')
 
 ![](https://github.com/yukiyuqichen/His-Geo/blob/main/figures/closeness.png)
 
+[Code](reproducibility/code_for_figure_5)
 
 ## Case Study: Counties in the Spring and Autumn and Warring States periods (770 – 221 B.C.E.)
 

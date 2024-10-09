@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 import geopandas as gpd
-# from keplergl import KeplerGl
+from keplergl import KeplerGl
 import json
 from . import normalizer
 from .import matcher
