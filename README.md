@@ -162,12 +162,40 @@ geocoder_test.data.to_csv("The file path", encoding='utf-8-sig')
 
 ![](https://github.com/yukiyuqichen/His-Geo/blob/main/figures/calculation_from_point.png)
 
+[Code](reproducibility/code_for_figure_3_4.ipynb)
+
 ### Evaluation
 
 ![](https://github.com/yukiyuqichen/His-Geo/blob/main/figures/closeness.png)
 
-[Code](reproducibility/code_for_figure_5)
+[Code](reproducibility/code_for_figure_5.ipynb)
+
+#### Evaluation of the Extracter
+
+|  Method   |   Model   | Precision |   Recall  |  F1 score |
+|-----------|-----------|-----------|-----------|-----------|
+|NER|albert-base-chinese-ner|0.400|0.732|0.486|
+|NER|bert-base-chinese-ner|0.410|0.745|0.494|
+|NER|roberta-base-finetuned-cluener2020-chinese|0.548|0.914|0.644|
+|Prompting|gpt-3.5-turbo-0125|0.684|0.785|0.709|
+|Prompting|gpt-4-turbo-2024-04-09|0.733|0.811|0.756|
+|Prompting|gpt-4o-2024-08-06|0.829|0.848|0.831|
+
+[Code](reproducibility/code_for_table_1.ipynb)
+
+#### Evaluation of the Geocoder
+
+![](https://github.com/yukiyuqichen/His-Geo/blob/main/figures/evaluation_geocoder.png)
+
+[Code](reproducibility/code_for_table_2_figure_6.ipynb)
 
 ## Case Study: Counties in the Spring and Autumn and Warring States periods (770 – 221 B.C.E.)
 
+![](https://github.com/yukiyuqichen/His-Geo/blob/main/figures/chgis_counties.png)
+
+[Code](reproducibility/code_for_figure_9.ipynb)
+
+
 ![](https://github.com/yukiyuqichen/His-Geo/blob/main/figures/maps.png)
+
+[Code](reproducibility/code_for_figure_7_8.ipynb)
