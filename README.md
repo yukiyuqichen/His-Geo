@@ -11,15 +11,6 @@
 A library to extract historical toponyms from texts, geocode and visualize the results on maps.
 
 
-## Update ##
-
-We provide a user-friendly Geocoder with a graphical user interface (in .exe format), ready to use out of the box.
-Welcome to provide feedback for improvement.
-See [His-Geo.Geocoder_202401.exe](https://github.com/yukiyuqichen/His-Geo/releases/tag/geocoding) in **Releases**.
-
-![](https://github.com/yukiyuqichen/His-Geo/blob/main/figures/Geocoder_with_UI.png)
-
-
 ## Install ##
 
 ```python
@@ -209,3 +200,12 @@ geocoder_test.data.to_csv("The file path", encoding='utf-8-sig')
 ![](https://github.com/yukiyuqichen/His-Geo/blob/main/figures/maps.png)
 
 [Reproducible Code](reproducible_code/code_for_figure_7_8.ipynb)
+
+
+## Update ##
+
+We provide a user-friendly Geocoder with a graphical user interface (in .exe format), ready to use out of the box.
+Welcome to provide feedback for improvement.
+See [His-Geo.Geocoder_202401.exe](https://github.com/yukiyuqichen/His-Geo/releases/tag/geocoding) in **Releases**.
+
+![](https://github.com/yukiyuqichen/His-Geo/blob/main/figures/Geocoder_with_UI.png)
