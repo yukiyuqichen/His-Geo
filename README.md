@@ -187,7 +187,7 @@ geocoder_test.data.to_csv("The file path", encoding='utf-8-sig')
 ![](https://github.com/yukiyuqichen/His-Geo/blob/main/figures/chgis_counties.png)
 
 
-![](https://github.com/yukiyuqichen/His-Geo/blob/main/figures/maps.png)
+![](https://github.com/yukiyuqichen/His-Geo/blob/main/figures/maps.jpg)
 
 
 ## Update ##
